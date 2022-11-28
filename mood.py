@@ -2,12 +2,11 @@ from flask import Flask
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db, login
+from app import db
 
 # initialize the API
 app = Flask(__name__)
@@ -17,7 +16,7 @@ api = Api(app)
 class Mood(Resource):
     username = db.Column(db.String(64), index=True, unique=True)
     password_hash = db.Column(db.String(258))
-    
+
     current_streak = db.Column(db.Integer, default=0)
     highest_streak = db.Column(db.Integer, default=0)
 
@@ -46,6 +45,16 @@ class Mood(Resource):
 
         data = pd.read_csv('mood.csv')
 
+        streak = 0
+        same_entries = data.pivot_table(columns=['userID'], aggfunc='size')
+
+        if same_entries['userID'] == self.username:
+            if same_entries['size'] == 0:
+                pass
+            else:
+                change = timedelta(data['Date'])
+                streak+=change
+
         if args['Date'] in list(data['Date']):
             return {
                 'message': f"Mood already entered for {args['Date']}"
@@ -62,6 +71,7 @@ class Mood(Resource):
             data = data.append(new_data, ignore_index=True)
             data.to_csv('mood.csv', index=False)  
             return {'data': data.to_dict()}, 200
+
     
 api.add_resource(Mood, '/mood')
 
