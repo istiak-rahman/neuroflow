@@ -1,4 +1,4 @@
-# neuroflow
+# NeuroFlow
 NeuroFlow Backend Coding Assessment
 
 If this were a production application rather than an assessment, there are some things I would consider/change:
